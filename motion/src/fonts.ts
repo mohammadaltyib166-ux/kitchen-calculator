@@ -18,3 +18,5 @@ for (const f of fontFiles) {
 export const cairo = "Cairo";
 // Reem Kufi: geometric Kufic display face for titles.
 export const kufi = "Reem Kufi";
+// Lalezar: heavy rounded Arabic display face (used by the "الهام" first-version styles).
+export const lalezar = "Lalezar";

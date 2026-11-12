@@ -48,3 +48,15 @@ npx remotion render Spotlight out/Spotlight.mp4 --props='{"footage":"footage.mp4
 ### تعديل النصوص والأسعار
 
 النصوص والأرقام مكتوبة مباشرة داخل ملفات `src/scenes/*.tsx`. غيّرها ثم أعد الريندر. مدة كل مشهد في `durationInFrames` (30 = ثانية واحدة).
+
+## مجلد «الهام» (النسخة الأولى)
+
+كود النسخة الأولى محفوظ في `src/الهام/`، وهي النسخة القريبة من فيديوهات الإلهام: `GoldDark` و`CreamUI` و`GlowOverlay`.
+
+في Remotion Studio تجدها في مجلد **Ilham**، لأن Remotion لا يقبل حروفًا عربية في أسماء المجلدات والفيديوهات. لريندر واحد منها:
+
+```bash
+npx remotion render Ilham-GoldDark out/Ilham-GoldDark.mp4
+```
+
+بعض نصوص هذه النسخة منقولة حرفيًا من فيديوهات الإلهام، فاستخدمها مرجعًا للتعلم فقط، ولا تنشرها كما هي.
