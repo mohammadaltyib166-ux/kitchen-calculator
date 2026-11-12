@@ -14,7 +14,7 @@ for (const f of fontFiles) {
   });
 }
 
-// Cairo: clean Arabic sans for body and bold headlines.
+// Cairo: clean Arabic sans for body text and numbers.
 export const cairo = "Cairo";
-// Lalezar: heavy rounded Arabic display face for punchy titles.
-export const lalezar = "Lalezar";
+// Reem Kufi: geometric Kufic display face for titles.
+export const kufi = "Reem Kufi";

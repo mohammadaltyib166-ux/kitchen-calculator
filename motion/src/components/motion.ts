@@ -3,6 +3,7 @@ import { Easing, interpolate } from "remotion";
 // Shared easing curves used across every style.
 export const easeOut = Easing.bezier(0.16, 1, 0.3, 1); // fast start, soft landing
 export const easeInOut = Easing.bezier(0.65, 0, 0.35, 1);
+export const easeIn = Easing.bezier(0.55, 0, 1, 0.45); // accelerating "slam"
 export const overshoot = Easing.bezier(0.34, 1.56, 0.64, 1); // small bounce past target
 
 const clamp = {
@@ -18,16 +19,17 @@ export const progress = (
   easing = easeOut,
 ) => interpolate(frame, [start, start + duration], [0, 1], { ...clamp, easing });
 
-/** Fade in at `start`, fade out so it is gone at `end`. */
-export const inOut = (
+/**
+ * Damped oscillation: starts at `amplitude`, swings back and forth and settles at 0.
+ * Used for the hanging price tag and the stamp impact shake.
+ */
+export const damped = (
   frame: number,
   start: number,
-  end: number,
-  fade = 8,
-) =>
-  interpolate(frame, [start, start + fade, end - fade, end], [0, 1, 1, 0], {
-    ...clamp,
-    easing: easeOut,
-  });
-
-export const mix = (a: number, b: number, t: number) => a + (b - a) * t;
+  amplitude: number,
+  { frequency = 0.22, decay = 0.07 } = {},
+) => {
+  const t = frame - start;
+  if (t < 0) return amplitude;
+  return amplitude * Math.exp(-decay * t) * Math.cos(frequency * t);
+};

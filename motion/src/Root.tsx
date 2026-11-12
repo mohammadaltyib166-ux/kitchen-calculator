@@ -1,33 +1,34 @@
 import React from "react";
 import { Composition, Folder } from "remotion";
-import { GoldDark, GOLD_DARK_DURATION } from "./scenes/GoldDark";
-import { CreamUI, CREAM_UI_DURATION } from "./scenes/CreamUI";
-import { GlowOverlay, GLOW_OVERLAY_DURATION } from "./scenes/GlowOverlay";
+import { Blueprint, BLUEPRINT_DURATION } from "./scenes/Blueprint";
+import { Swatches, SWATCHES_DURATION } from "./scenes/Swatches";
+import { Spotlight, SPOTLIGHT_DURATION } from "./scenes/Spotlight";
 
-// All styles are vertical 9:16 reels at 30fps (same as the inspiration videos).
+// Three promo reels for the aluminium kitchen calculator.
+// All are vertical 9:16 at 30fps.
 export const RemotionRoot: React.FC = () => {
   return (
     <Folder name="Styles">
       <Composition
-        id="GoldDark"
-        component={GoldDark}
-        durationInFrames={GOLD_DARK_DURATION}
+        id="Blueprint"
+        component={Blueprint}
+        durationInFrames={BLUEPRINT_DURATION}
         fps={30}
         width={1080}
         height={1920}
       />
       <Composition
-        id="CreamUI"
-        component={CreamUI}
-        durationInFrames={CREAM_UI_DURATION}
+        id="Swatches"
+        component={Swatches}
+        durationInFrames={SWATCHES_DURATION}
         fps={30}
         width={1080}
         height={1920}
       />
       <Composition
-        id="GlowOverlay"
-        component={GlowOverlay}
-        durationInFrames={GLOW_OVERLAY_DURATION}
+        id="Spotlight"
+        component={Spotlight}
+        durationInFrames={SPOTLIGHT_DURATION}
         fps={30}
         width={1080}
         height={1920}

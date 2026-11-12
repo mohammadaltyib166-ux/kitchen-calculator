@@ -1,45 +1,50 @@
-# موشن — أكواد حركة للفيديوهات العمودية
+# موشن — فيديوهات ترويجية لحاسبة المطبخ
 
-مشروع [Remotion](https://www.remotion.dev) (React) فيه ثلاثة أنماط حركة مستوحاة من فيديوهات مجلد «الهام». كل الفيديوهات عمودية 1080×1920 بسرعة 30 إطارًا في الثانية.
+مشروع [Remotion](https://www.remotion.dev) (React) فيه ثلاثة فيديوهات عمودية (1080×1920، 30 إطارًا في الثانية) تروّج لحاسبة سعر مطبخ الألمنيوم. الأرقام في الفيديوهات من نفس معادلة الحاسبة: 4 م × 850 × 1.15 + أدراج + إضافات = 5,110 د.ل.
 
-| النمط | الملف | الفكرة |
+| النمط | الملف | لغة الحركة |
 |---|---|---|
-| `GoldDark` | `src/scenes/GoldDark.tsx` | خلفية سوداء بتوهج ذهبي، عنوان بكلمة مظللة، بطاقات زجاجية، ترجمة كلمة بكلمة، عدّاد، منحنى توقيت يُرسم |
-| `CreamUI` | `src/scenes/CreamUI.tsx` | خلفية كريمية، خط عريض، لون برتقالي، بطاقات واجهة: كتابة نص، تايملاين بمؤشر يتحرك، أيقونات |
-| `GlowOverlay` | `src/scenes/GlowOverlay.tsx` | عناوين صفراء متوهجة فوق فيديو حقيقي، تمدد أفقي للكلمة، قطع برتقالية تعبر الشاشة، نجوم لامعة |
+| `Blueprint` | `src/scenes/Blueprint.tsx` | مخطط هندسي على ورق أزرق: المطبخ يُرسم خطًا خطًا، خطوط مقاسات تمتد من المنتصف، معادلة تُحسب، وأرقام تدور مثل العدّاد |
+| `Swatches` | `src/scenes/Swatches.tsx` | عيّنات تنقلب ثلاثية الأبعاد، علامات صح تُرسم، أسعار تطير إلى فاتورة يتحدث مجموعها، وختم «سعر تقديري» يُطبع بقوة |
+| `Spotlight` | `src/scenes/Spotlight.tsx` | رسومات فوق فيديو مطبخ حقيقي: فتحة دائرية تكشف المشهد، شريط اسم بلمعة، خطوط إشارة تشير إلى الخزائن والرخام، بطاقة سعر معلقة تتأرجح، وزر واتساب يُضغط |
 
 ## المكونات القابلة لإعادة الاستخدام
 
-- `src/components/Kinetic.tsx`
-  - `WordCaption`: ترجمة تظهر كلمة بعد كلمة
-  - `HighlightTitle`: عنوان فيه كلمة مظللة، تُكتب بين قوسين: `"كأنه [مونتير] مبتدئ؟"`
-  - `CountUp`: رقم يعدّ مع توهج
-  - `StretchGlowTitle`: كلمة تتمدد أفقيًا مع توهج
-- `src/components/Surfaces.tsx`
-  - الخلفيات و`PopCard` (بطاقة تقفز من الأسفل)
-  - `StepBadge` (شارة مثل `01 / 05`) و`ProgressLine` (خط تقدم)
-  - `Sparkle` (نجمة لامعة) و`SweepSlab` (قطعة برتقالية تعبر الشاشة)
-- `src/components/motion.ts`: منحنيات التوقيت المشتركة (easing)
+- `src/components/Text.tsx`
+  - `MaskLine`: سطر يصعد من خلف حافة مخفية
+  - `UnderlineCaption`: ترجمة يتنقل خط تحتها من كلمة لكلمة
+  - `RollingNumber`: رقم يدور مثل العدّاد الميكانيكي
+- `src/components/Draw.tsx`
+  - `DrawPath`: خط يُرسم مثل القلم
+  - `DimensionLine`: خط مقاس هندسي
+  - `CheckBadge` و`EmptyBox`: علامة صح تُرسم، ودائرة فارغة لغير المختار
+- `src/components/Pieces.tsx`
+  - الخلفيات و`FlipTile` (عيّنة تنقلب) و`Stamp` (ختم)
+  - `SwingTag` (بطاقة سعر تتأرجح) و`Callout` (خط إشارة مع اسم)
+  - `IrisReveal` (فتحة دائرية) و`LowerThird` (شريط اسم) و`PressButton` (زر يُضغط)
+- `src/components/motion.ts`: منحنيات التوقيت، والتأرجح المتلاشي (`damped`)
 
-الخطوط (Cairo وLalezar) محفوظة داخل `public/fonts`، فلا يحتاج الريندر إلى الإنترنت.
+الخطوط (Cairo وReem Kufi) محفوظة داخل `public/fonts`، فلا يحتاج الريندر إلى الإنترنت.
 
 ## التشغيل
 
 ```bash
 cd motion
 npm i
-npm run dev                                # معاينة تفاعلية في Remotion Studio
-npx remotion render GoldDark out/GoldDark.mp4
+npm run dev                                   # معاينة تفاعلية في Remotion Studio
+npx remotion render Blueprint out/Blueprint.mp4
 ```
 
-### استخدام فيديوك في نمط GlowOverlay
+### استخدام فيديو مطبخك في نمط Spotlight
 
 ضع الفيديو في `public/footage.mp4` (لا يُرفع إلى Git)، ثم:
 
 ```bash
-npx remotion render GlowOverlay out/GlowOverlay.mp4 --props='{"footage":"footage.mp4"}'
+npx remotion render Spotlight out/Spotlight.mp4 --props='{"footage":"footage.mp4"}'
 ```
 
-### تعديل النصوص
+مواضع خطوط الإشارة (`x` و`y` في `Spotlight.tsx`) مضبوطة على الخلفية المؤقتة. عدّلها لتشير إلى الخزائن والرخام في فيديوك.
 
-النصوص مكتوبة مباشرة داخل ملفات `src/scenes/*.tsx`. غيّرها ثم أعد الريندر. مدة كل مشهد في `durationInFrames` (30 = ثانية واحدة).
+### تعديل النصوص والأسعار
+
+النصوص والأرقام مكتوبة مباشرة داخل ملفات `src/scenes/*.tsx`. غيّرها ثم أعد الريندر. مدة كل مشهد في `durationInFrames` (30 = ثانية واحدة).
