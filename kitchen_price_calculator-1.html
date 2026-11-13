@@ -4,87 +4,469 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>حاسبة سعر مطبخ ألمنيوم</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800;900&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f4f5f7;color:#222}
-.container{max-width:760px;margin:30px auto;padding:16px}.card{background:#fff;border-radius:18px;padding:22px;box-shadow:0 8px 28px #00000012}
-h1{margin-top:0;font-size:26px}.sub{color:#666;margin-bottom:22px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-label{font-weight:bold;font-size:14px;display:block;margin-bottom:6px}
-input,select{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;font-size:16px}
-.full{grid-column:1/-1}.checks{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.check{border:1px solid #ddd;border-radius:10px;padding:12px;background:#fafafa}
-.check input{width:auto}.result{margin-top:20px;background:#f0f7ff;border-radius:14px;padding:18px}
-.price{font-size:32px;font-weight:bold;margin:6px 0}.muted{color:#666;font-size:13px}
-button{border:0;border-radius:11px;padding:14px 18px;font-size:16px;font-weight:bold;cursor:pointer;margin-top:14px}
-.calc{background:#222;color:#fff;width:100%}.wa{background:#20b15a;color:#fff;width:100%}
-.note{font-size:12px;color:#777;margin-top:12px}
-@media(max-width:600px){.grid,.checks{grid-template-columns:1fr}}
+:root{
+  --bg:#efeded;--bg2:#e4e1e1;--ink:#151515;--muted:#6c6666;
+  --red:#e0122c;--red2:#a3001a;--red3:#5e000e;--glow:#ff2b45;
+  --card:#ffffff;--line:#e2dcdc;--wa:#1faa55;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{margin:0;font-family:"Cairo",Arial,sans-serif;color:var(--ink);overflow-x:hidden;
+  background:radial-gradient(120% 80% at 50% 30%,#f8f7f7 0%,var(--bg) 55%,var(--bg2) 100%) fixed;}
+button,input{font-family:inherit}
+
+/* ---------- stage ---------- */
+.stage{position:relative;overflow-x:clip;max-width:560px;min-height:100vh;margin:0 auto;padding:18px 16px 110px;display:flex;flex-direction:column}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;position:relative;z-index:3}
+.prog{display:flex;gap:6px}
+.prog i{width:14px;height:14px;background:#d9d3d3;display:block;transition:background .3s,transform .3s}
+.prog i.on{background:var(--red);transform:rotate(45deg) scale(.85)}
+.prog i.done{background:var(--red2)}
+.ticker{background:#fff;border:2px solid var(--red);border-radius:999px;padding:4px 14px;font-weight:800;font-size:14px;
+  box-shadow:0 6px 18px #e0122c22;white-space:nowrap;opacity:0;transform:translateY(-8px);transition:.4s}
+.ticker.show{opacity:1;transform:none}
+.ticker b{color:var(--red);display:inline-block}
+
+.steps{position:relative;flex:1;margin-top:14px}
+.step{position:absolute;inset:0;display:none;flex-direction:column;will-change:transform,filter,opacity}
+.step.active{display:flex;position:relative}
+
+/* ---------- kinetic type ---------- */
+.kt{position:relative;margin:18px 0 22px;text-align:center}
+.kt .small{display:block;font-weight:600;font-size:18px;color:#2a2a2a;letter-spacing:.2px}
+.kt .big{position:relative;display:inline-block;font-weight:900;font-size:clamp(46px,14vw,78px);line-height:1.15;
+  background:linear-gradient(180deg,var(--glow) 0%,var(--red) 45%,var(--red2) 80%,var(--red3) 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  transform:skewX(-9deg);filter:drop-shadow(0 6px 10px #a3001a33);padding:0 6px}
+.kt .tag{display:inline-block;margin-top:2px;font-size:13px;font-weight:800;color:#fff;background:var(--red);padding:1px 10px;border-radius:6px;transform:rotate(-3deg)}
+.kt .cursor{position:absolute;top:18%;width:16px;height:16px;background:var(--red);pointer-events:none;opacity:0}
+
+/* ---------- pixels ---------- */
+.px{position:fixed;pointer-events:none;z-index:50;background:var(--red)}
+.amb{position:absolute;pointer-events:none;background:var(--red);animation:blink 2.4s steps(2) infinite}
+@keyframes blink{0%,100%{opacity:.9}50%{opacity:.15}}
+
+/* ---------- cards ---------- */
+.opts{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.opt{position:relative;background:var(--card);border:3px solid transparent;border-radius:18px;padding:14px 8px 10px;cursor:pointer;
+  box-shadow:0 10px 24px #0000000f;text-align:center;font-weight:800;font-size:15px;transition:border-color .25s,transform .25s,box-shadow .25s}
+.opt svg{width:100%;height:64px;display:block;margin-bottom:6px}
+.opt small{display:block;font-weight:600;color:var(--muted);font-size:12px}
+.opt.sel{border-color:var(--red);transform:translateY(-4px) rotate(-2deg);box-shadow:0 14px 30px #e0122c33}
+.opt.sel::after{content:"";position:absolute;top:-9px;left:-9px;width:18px;height:18px;background:var(--red)}
+
+.fields{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+.field{background:var(--card);border-radius:18px;padding:12px 14px;box-shadow:0 10px 24px #0000000d;border:2px solid transparent;transition:border-color .2s}
+.field:focus-within{border-color:var(--red)}
+.field label{display:block;font-weight:800;font-size:14px;margin-bottom:6px}
+.field label span{color:var(--muted);font-weight:600;font-size:12px}
+.stepper{display:flex;align-items:center;gap:10px}
+.stepper button{flex:none;width:46px;height:46px;border:0;border-radius:12px;background:#f3eeee;font-size:24px;font-weight:900;cursor:pointer;color:var(--red2)}
+.stepper button:active{transform:scale(.9)}
+.stepper input{flex:1;min-width:0;width:100%;text-align:center;border:0;background:transparent;font-size:30px;font-weight:900;color:var(--ink);outline:none;-moz-appearance:textfield}
+.stepper input::-webkit-outer-spin-button,.stepper input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+
+.bigcount{text-align:center;margin:4px 0 14px}
+.bigcount output{display:inline-block;font-size:110px;line-height:1;font-weight:900;color:var(--red);transform:skewX(-9deg);
+  filter:drop-shadow(0 8px 14px #e0122c44)}
+
+.extras{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ex{position:relative;background:var(--card);border:3px solid transparent;border-radius:18px;padding:14px 12px;cursor:pointer;box-shadow:0 10px 24px #0000000f;
+  font-weight:800;font-size:15px;transition:border-color .25s,transform .25s,background .25s}
+.ex input{position:absolute;opacity:0;pointer-events:none}
+.ex .ic{width:38px;height:38px;border-radius:10px;background:#f6eded;display:grid;place-items:center;margin-bottom:8px;transition:background .25s}
+.ex .ic svg{width:22px;height:22px;stroke:var(--red2);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:stroke .25s}
+.ex small{display:block;color:var(--red);font-weight:800;font-size:13px;margin-top:2px}
+.ex.on{border-color:var(--red);transform:rotate(-1.5deg) translateY(-3px)}
+.ex.on .ic{background:var(--red)}
+.ex.on .ic svg{stroke:#fff}
+
+/* ---------- intro ---------- */
+.stack{position:relative;height:230px;margin:6px auto 4px;width:100%;max-width:340px}
+.pcard{position:absolute;width:140px;height:170px;border-radius:18px;border:4px solid var(--red);background:#fff;box-shadow:0 18px 34px #0000001f;overflow:hidden}
+.pcard svg{width:100%;height:100%;display:block}
+.pcard.a{right:8%;top:24px;transform:rotate(8deg)}
+.pcard.b{left:8%;top:6px;transform:rotate(-7deg)}
+.pcard.c{left:50%;margin-left:-70px;top:44px;transform:rotate(-1deg);z-index:2}
+.pcard .lbl{position:absolute;top:8px;right:8px;background:var(--red);color:#fff;font-size:11px;font-weight:800;padding:0 8px;border-radius:6px}
+
+/* ---------- result ---------- */
+.result{position:relative;text-align:center;padding:20px 0 6px}
+.result .rings{position:absolute;left:50%;top:50%;width:420px;height:420px;margin:-210px 0 0 -210px;border-radius:50%;pointer-events:none;
+  background:repeating-radial-gradient(circle,#e0122c26 0 2px,transparent 2px 14px);
+  -webkit-mask:radial-gradient(circle,#000 0 30%,transparent 70%);mask:radial-gradient(circle,#000 0 30%,transparent 70%);opacity:.0}
+.total{position:relative;display:inline-block;font-size:clamp(52px,15vw,86px);font-weight:900;line-height:1.1;color:var(--red);transform:skewX(-9deg);
+  filter:drop-shadow(0 10px 18px #e0122c44)}
+.total small{font-size:.38em;color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:18px 0 6px}
+.chip{background:#fff;border:3px solid var(--red);border-radius:14px;padding:6px 14px;font-weight:800;font-size:14px;box-shadow:0 10px 20px #0000001a}
+.chip span{display:block;color:var(--muted);font-size:11px;font-weight:600}
+.note{font-size:12px;color:var(--muted);text-align:center;margin-top:10px}
+
+/* ---------- buttons ---------- */
+.btn{border:0;border-radius:16px;padding:15px 18px;font-size:17px;font-weight:900;cursor:pointer;width:100%;transition:transform .15s}
+.btn:active{transform:scale(.96)}
+.btn.primary{background:linear-gradient(180deg,var(--red),var(--red2));color:#fff;box-shadow:0 12px 26px #e0122c44}
+.btn.ghost{background:#fff;color:var(--ink);box-shadow:0 8px 18px #0000000f}
+.btn.wa{background:var(--wa);color:#fff;box-shadow:0 12px 26px #1faa5544;margin-top:12px}
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:5;padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+  background:linear-gradient(0deg,var(--bg2) 55%,#e4e1e100)}
+.nav .in{max-width:528px;margin:0 auto;display:flex;gap:10px}
+.nav .in .ghost{flex:0 0 34%}
+.nav.hide{display:none}
+
+/* ---------- transition FX layer ---------- */
+#fx{position:fixed;inset:0;pointer-events:none;z-index:40;overflow:hidden}
+#fx .flash{position:absolute;inset:0;background:#fff;opacity:0}
+#fx .redglow{position:absolute;inset:0;opacity:0;background:radial-gradient(60% 50% at 50% 50%,#ff2b4566 0%,#e0122c22 40%,transparent 70%)}
+#fx .bolt{position:absolute;left:50%;top:0;height:100%;width:120px;margin-left:-60px;opacity:0}
+#fx .bolt path{fill:none;stroke:#fff;stroke-width:3;filter:drop-shadow(0 0 6px #ff2b45) drop-shadow(0 0 18px #e0122c) drop-shadow(0 0 34px #e0122c)}
+#fx .ring{position:absolute;left:50%;top:50%;width:160vmax;height:160vmax;margin:-80vmax 0 0 -80vmax;border-radius:50%;opacity:0;
+  background:repeating-radial-gradient(circle,transparent 0 18px,#e0122c55 18px 22px);
+  -webkit-mask:radial-gradient(circle,transparent 0 12%,#000 30%,#000 45%,transparent 60%);mask:radial-gradient(circle,transparent 0 12%,#000 30%,#000 45%,transparent 60%)}
+#fx .dots{position:absolute;inset:0;opacity:0;background-image:radial-gradient(#e0122c 1.6px,transparent 1.9px);background-size:12px 12px;
+  -webkit-mask:radial-gradient(circle at 50% 50%,transparent 0 22%,#000 40%,transparent 75%);mask:radial-gradient(circle at 50% 50%,transparent 0 22%,#000 40%,transparent 75%)}
+
+@media (max-width:420px){.opts{gap:8px}.opt{font-size:13px}.bigcount output{font-size:92px}}
+@media (prefers-reduced-motion:reduce){.amb{animation:none}}
 </style>
 </head>
 <body>
-<div class="container">
-<div class="card">
-<h1>حاسبة سعر مطبخ ألمنيوم</h1>
-<div class="sub">نسخة أولية — أدخل المقاسات والخيارات لمعرفة السعر التقديري.</div>
 
-<div class="grid">
-<div><label>نوع المطبخ</label>
-<select id="shape"><option value="1">مستقيم</option><option value="1.15">حرف L</option><option value="1.3">حرف U</option></select></div>
+<div class="stage">
+  <div class="top">
+    <div class="prog" id="prog"><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="ticker" id="ticker">السعر الآن: <b id="tickVal">0</b> د.ل</div>
+  </div>
 
-<div><label>الطول الإجمالي (متر)</label><input id="length" type="number" min="0" step="0.1" value="4"></div>
+  <div class="steps" id="steps">
 
-<div><label>ارتفاع الخزائن (متر)</label><input id="height" type="number" min="0" step="0.01" value="0.7"></div>
+    <!-- 0 intro -->
+    <section class="step active" data-step="0">
+      <div class="kt"><span class="small">احسب سعر</span><span class="big">مطبخك</span><br><span class="tag">ألمنيوم</span></div>
+      <div class="stack" id="stack">
+        <div class="pcard b"><span class="lbl">L</span><svg viewBox="0 0 140 170"><rect width="140" height="170" fill="#f6f1f1"/><path d="M30 40v100h80" stroke="#e0122c" stroke-width="16" fill="none" stroke-linejoin="round"/></svg></div>
+        <div class="pcard a"><span class="lbl">U</span><svg viewBox="0 0 140 170"><rect width="140" height="170" fill="#f6f1f1"/><path d="M30 40v100h80V40" stroke="#e0122c" stroke-width="16" fill="none" stroke-linejoin="round"/></svg></div>
+        <div class="pcard c"><svg viewBox="0 0 140 170"><rect width="140" height="170" fill="#fff"/>
+          <rect x="16" y="22" width="108" height="36" rx="5" fill="#f2e9e9" stroke="#a3001a" stroke-width="3"/><line x1="70" y1="22" x2="70" y2="58" stroke="#a3001a" stroke-width="3"/>
+          <rect x="12" y="92" width="116" height="8" fill="#151515"/>
+          <rect x="16" y="100" width="108" height="52" rx="5" fill="#f2e9e9" stroke="#a3001a" stroke-width="3"/><line x1="52" y1="100" x2="52" y2="152" stroke="#a3001a" stroke-width="3"/><line x1="88" y1="100" x2="88" y2="152" stroke="#a3001a" stroke-width="3"/>
+          <line x1="28" y1="118" x2="40" y2="118" stroke="#e0122c" stroke-width="4" stroke-linecap="round"/><line x1="64" y1="118" x2="76" y2="118" stroke="#e0122c" stroke-width="4" stroke-linecap="round"/><line x1="100" y1="118" x2="112" y2="118" stroke="#e0122c" stroke-width="4" stroke-linecap="round"/>
+        </svg></div>
+      </div>
+      <p class="note" style="font-size:14px;margin:14px 0 18px">٤ خطوات سريعة وتعرف السعر التقديري لمطبخك.</p>
+      <button class="btn primary" id="startBtn">ابدأ الآن</button>
+    </section>
 
-<div><label>سعر المتر الأساسي (د.ل)</label><input id="meter" type="number" min="0" step="1" value="850"></div>
+    <!-- 1 shape -->
+    <section class="step" data-step="1">
+      <div class="kt"><span class="small">اختر</span><span class="big">شكل المطبخ</span></div>
+      <div class="opts" id="shapeOpts">
+        <div class="opt sel" data-v="1" data-name="مستقيم"><svg viewBox="0 0 100 64"><path d="M15 40h70" stroke="#e0122c" stroke-width="12" stroke-linecap="round"/></svg>مستقيم<small>×1</small></div>
+        <div class="opt" data-v="1.15" data-name="حرف L"><svg viewBox="0 0 100 64"><path d="M28 10v40h50" stroke="#e0122c" stroke-width="12" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>حرف L<small>×1.15</small></div>
+        <div class="opt" data-v="1.3" data-name="حرف U"><svg viewBox="0 0 100 64"><path d="M22 10v40h56V10" stroke="#e0122c" stroke-width="12" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>حرف U<small>×1.3</small></div>
+      </div>
+    </section>
 
-<div><label>عدد الأدراج</label><input id="drawers" type="number" min="0" step="1" value="4"></div>
+    <!-- 2 dimensions -->
+    <section class="step" data-step="2">
+      <div class="kt"><span class="small">حدد</span><span class="big">المقاسات</span></div>
+      <div class="fields">
+        <div class="field"><label>الطول الإجمالي <span>(متر)</span></label><div class="stepper"><button data-inc="length" data-d="0.1">+</button><input id="length" type="number" min="0" step="0.1" value="4" inputmode="decimal"><button data-inc="length" data-d="-0.1">−</button></div></div>
+        <div class="field"><label>ارتفاع الخزائن <span>(متر)</span></label><div class="stepper"><button data-inc="height" data-d="0.05">+</button><input id="height" type="number" min="0" step="0.01" value="0.7" inputmode="decimal"><button data-inc="height" data-d="-0.05">−</button></div></div>
+        <div class="field"><label>سعر المتر الأساسي <span>(د.ل)</span></label><div class="stepper"><button data-inc="meter" data-d="10">+</button><input id="meter" type="number" min="0" step="1" value="850" inputmode="numeric"><button data-inc="meter" data-d="-10">−</button></div></div>
+      </div>
+    </section>
 
-<div><label>سعر الدرج (د.ل)</label><input id="drawerPrice" type="number" min="0" step="1" value="75"></div>
+    <!-- 3 drawers -->
+    <section class="step" data-step="3">
+      <div class="kt"><span class="small">كم عدد</span><span class="big">الأدراج</span></div>
+      <div class="bigcount"><output id="drawerShow">4</output></div>
+      <div class="fields">
+        <div class="field"><label>عدد الأدراج</label><div class="stepper"><button data-inc="drawers" data-d="1">+</button><input id="drawers" type="number" min="0" step="1" value="4" inputmode="numeric"><button data-inc="drawers" data-d="-1">−</button></div></div>
+        <div class="field"><label>سعر الدرج <span>(د.ل)</span></label><div class="stepper"><button data-inc="drawerPrice" data-d="5">+</button><input id="drawerPrice" type="number" min="0" step="1" value="75" inputmode="numeric"><button data-inc="drawerPrice" data-d="-5">−</button></div></div>
+      </div>
+    </section>
 
-<div class="full"><label>الإضافات</label>
-<div class="checks">
-<label class="check"><input id="wall" type="checkbox"> خزائن معلقة (+300 د.ل)</label>
-<label class="check"><input id="access" type="checkbox"> إكسسوارات (+250 د.ل)</label>
-<label class="check"><input id="counter" type="checkbox"> سطح/رخام (+400 د.ل)</label>
-<label class="check"><input id="delivery" type="checkbox"> توصيل وتركيب (+200 د.ل)</label>
+    <!-- 4 extras -->
+    <section class="step" data-step="4">
+      <div class="kt"><span class="small">أضف</span><span class="big">الإضافات</span></div>
+      <div class="extras">
+        <label class="ex"><input id="wall" type="checkbox" data-price="300"><div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="8" rx="1"/><path d="M12 4v8M3 18h18"/></svg></div>خزائن معلقة<small>+300 د.ل</small></label>
+        <label class="ex"><input id="access" type="checkbox" data-price="250"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/></svg></div>إكسسوارات<small>+250 د.ل</small></label>
+        <label class="ex"><input id="counter" type="checkbox" data-price="400"><div class="ic"><svg viewBox="0 0 24 24"><path d="M2 9h20v4H2zM4 13v7M20 13v7M8 11l3-2M13 11l4-2"/></svg></div>سطح / رخام<small>+400 د.ل</small></label>
+        <label class="ex"><input id="delivery" type="checkbox" data-price="200"><div class="ic"><svg viewBox="0 0 24 24"><path d="M1 6h13v10H1zM14 10h4l3 3v3h-7"/><circle cx="5" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg></div>توصيل وتركيب<small>+200 د.ل</small></label>
+      </div>
+    </section>
+
+    <!-- 5 result -->
+    <section class="step" data-step="5">
+      <div class="kt"><span class="small">السعر</span><span class="big">التقديري</span></div>
+      <div class="result">
+        <div class="rings" id="rings"></div>
+        <div class="total" id="total">0 <small>د.ل</small></div>
+        <div class="chips" id="chips"></div>
+      </div>
+      <button class="btn wa" id="waBtn">إرسال الطلب عبر واتساب</button>
+      <button class="btn ghost" id="editBtn" style="margin-top:10px">تعديل الخيارات</button>
+      <div class="note">ملاحظة: السعر النهائي تقديري ويُحدد بعد مراجعة المقاسات والخامات والمعاينة.</div>
+    </section>
+
+  </div>
+</div>
+
+<div class="nav hide" id="nav"><div class="in">
+  <button class="btn ghost" id="backBtn">رجوع</button>
+  <button class="btn primary" id="nextBtn">التالي</button>
 </div></div>
-</div>
 
-<button class="calc" onclick="calculate()">احسب السعر</button>
-
-<div class="result">
-<div class="muted">السعر التقديري</div>
-<div class="price" id="total">0 د.ل</div>
-<div id="details" class="muted"></div>
-</div>
-
-<button class="wa" onclick="sendWhatsApp()">إرسال الطلب عبر واتساب</button>
-<div class="note">ملاحظة: السعر النهائي تقديري ويُحدد بعد مراجعة المقاسات والخامات والمعاينة.</div>
-</div>
+<div id="fx">
+  <div class="dots"></div>
+  <div class="ring"></div>
+  <div class="redglow"></div>
+  <svg class="bolt" viewBox="0 0 120 1000" preserveAspectRatio="none"><path d="M60 0 L48 140 L74 260 L44 400 L70 520 L50 640 L76 780 L52 900 L60 1000" pathLength="1"/></svg>
+  <div class="flash"></div>
 </div>
 
 <script>
-let lastTotal=0;
+/* ===================== state & pricing (same rules as before) ===================== */
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let shape=1, shapeName='مستقيم', lastTotal=0, cur=0, busy=false;
 function n(id){return Number(document.getElementById(id).value)||0}
-function calculate(){
- const shape=n('shape'), length=n('length'), meter=n('meter'), drawers=n('drawers'), drawerPrice=n('drawerPrice');
- let base=length*meter*shape, drawer=drawers*drawerPrice, extras=0;
- if(document.getElementById('wall').checked) extras+=300;
- if(document.getElementById('access').checked) extras+=250;
- if(document.getElementById('counter').checked) extras+=400;
- if(document.getElementById('delivery').checked) extras+=200;
- lastTotal=base+drawer+extras;
- document.getElementById('total').textContent=lastTotal.toLocaleString('ar-LY')+' د.ل';
- document.getElementById('details').textContent=`أساسي: ${base.toLocaleString('ar-LY')} د.ل + أدراج: ${drawer.toLocaleString('ar-LY')} د.ل + إضافات: ${extras.toLocaleString('ar-LY')} د.ل`;
+function fmt(v){return Math.round(v).toLocaleString('ar-LY')}
+function compute(){
+  const base=n('length')*n('meter')*shape, drawer=n('drawers')*n('drawerPrice');
+  let extras=0; $$('.ex input').forEach(c=>{if(c.checked) extras+=Number(c.dataset.price)});
+  return {base,drawer,extras,total:base+drawer+extras};
 }
+
+/* ===================== motion helpers ===================== */
+const anim=(el,kf,o)=>el.animate(kf,Object.assign({fill:'both'},o)).finished;
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const rand=(a,b)=>a+Math.random()*(b-a);
+
+// glitchy red pixel squares (agency-reel style)
+function pixelBurst(x,y,count=10,spread=90){
+  if(RM) return;
+  for(let i=0;i<count;i++){
+    const p=document.createElement('div'); p.className='px';
+    const s=[6,8,10,14,18][Math.floor(Math.random()*5)];
+    p.style.cssText=`width:${s}px;height:${s}px;left:${x}px;top:${y}px;background:${Math.random()<.3?'#ff8a98':Math.random()<.5?'#a3001a':'#e0122c'}`;
+    document.body.appendChild(p);
+    const dx=rand(-spread,spread), dy=rand(-spread,spread);
+    p.animate([
+      {transform:'translate(0,0)',opacity:1},
+      {transform:`translate(${dx*.5}px,${dy*.5}px)`,opacity:1,offset:.4},
+      {transform:`translate(${dx}px,${dy}px)`,opacity:0}
+    ],{duration:rand(380,700),easing:'steps(5,end)',delay:rand(0,120)}).finished.then(()=>p.remove());
+  }
+}
+function burstAt(el,count,spread){const r=el.getBoundingClientRect();pixelBurst(r.left+r.width/2,r.top+r.height/2,count,spread)}
+
+// ambient blinking squares around a headline
+function ambient(kt){
+  kt.querySelectorAll('.amb').forEach(a=>a.remove());
+  if(RM) return;
+  for(let i=0;i<4;i++){
+    const a=document.createElement('i'); a.className='amb'; const s=[6,9,12][i%3];
+    a.style.cssText=`width:${s}px;height:${s}px;top:${rand(0,85)}%;${i%2?'left':'right'}:${rand(2,18)}%;animation-delay:${rand(0,2)}s;background:${i%2?'#e0122c':'#ff8a98'}`;
+    kt.appendChild(a);
+  }
+}
+
+// kinetic headline: small word blurs in, big word types on from the right with a pixel cursor
+async function headline(step){
+  const kt=step.querySelector('.kt'); if(!kt) return;
+  const sm=kt.querySelector('.small'), big=kt.querySelector('.big'), tag=kt.querySelector('.tag');
+  ambient(kt);
+  if(RM){[sm,big,tag].forEach(e=>e&&(e.style.opacity=1));return}
+  anim(sm,[{opacity:0,filter:'blur(8px)',transform:'translateY(-10px)'},{opacity:1,filter:'blur(0)',transform:'none'}],{duration:350,easing:'ease-out'});
+  let cur=kt.querySelector('.cursor'); if(!cur){cur=document.createElement('i');cur.className='cursor';big.appendChild(cur)}
+  const d=520;
+  anim(big,[{clipPath:'inset(-20% 0 -20% 100%)',filter:'blur(6px) drop-shadow(0 6px 10px #a3001a33)'},{clipPath:'inset(-20% 0 -20% 0%)',filter:'blur(0) drop-shadow(0 6px 10px #a3001a33)'}],{duration:d,delay:120,easing:'steps(9,end)'});
+  cur.animate([{right:'0%',opacity:1},{right:'100%',opacity:1},{right:'104%',opacity:0}],{duration:d+80,delay:120,easing:'steps(9,end)',fill:'both'});
+  if(tag) anim(tag,[{opacity:0,transform:'rotate(-12deg) scale(.4)'},{opacity:1,transform:'rotate(-3deg) scale(1.15)',offset:.7},{opacity:1,transform:'rotate(-3deg) scale(1)'}],{duration:420,delay:560,easing:'cubic-bezier(.2,1.4,.4,1)'});
+  setTimeout(()=>burstAt(big,8,70),200+d);
+}
+
+// cards pop in tilted with overshoot, then settle
+function popIn(els,base=180){
+  if(RM) return;
+  els.forEach((el,i)=>{
+    const r=rand(-14,14);
+    el.animate([
+      {opacity:0,transform:`scale(.3) rotate(${r}deg)`,filter:'blur(10px)'},
+      {opacity:1,transform:`scale(1.08) rotate(${-r*.3}deg)`,filter:'blur(0)',offset:.65},
+      {opacity:1}
+    ],{duration:520,delay:base+i*90,easing:'cubic-bezier(.2,.9,.3,1.2)',fill:'backwards'});
+  });
+}
+
+// punch-zoom number change (food-ad style)
+function punch(el,scale=1.25){
+  if(RM) return;
+  el.animate([{transform:`skewX(-9deg) scale(${scale})`,filter:'drop-shadow(0 0 18px #ff2b45)'},{transform:'skewX(-9deg) scale(1)'}],{duration:320,easing:'cubic-bezier(.2,.8,.2,1)'});
+}
+function countUp(el,from,to,ms=1100,suffix=' <small>د.ل</small>'){
+  if(RM){el.innerHTML=fmt(to)+suffix;return Promise.resolve()}
+  return new Promise(res=>{const t0=performance.now();
+    (function f(t){const k=Math.min(1,(t-t0)/ms),e=1-Math.pow(2,-10*k);
+      el.innerHTML=fmt(from+(to-from)*(k===1?1:e))+suffix; k<1?requestAnimationFrame(f):res()})(t0)});
+}
+
+/* ===================== transitions between steps ===================== */
+const fx={flash:$('#fx .flash'),glow:$('#fx .redglow'),bolt:$('#fx .bolt'),boltPath:$('#fx .bolt path'),ring:$('#fx .ring'),dots:$('#fx .dots')};
+
+const T={
+  // fast whip + zoom blur (food ad)
+  async whip(a,b,dir){
+    await anim(a,[{transform:'none',filter:'blur(0)',opacity:1},{transform:`translateX(${dir*45}%) scale(1.12)`,filter:'blur(22px)',opacity:0}],{duration:230,easing:'cubic-bezier(.7,0,.9,.5)'});
+    swap(a,b);
+    await anim(b,[{transform:`translateX(${-dir*45}%) scale(.88)`,filter:'blur(22px)',opacity:0},{transform:'none',filter:'blur(0)',opacity:1}],{duration:380,easing:'cubic-bezier(.1,.7,.2,1)'});
+  },
+  // glowing red lightning line splitting the frame (agency reel)
+  async bolt(a,b){
+    fx.boltPath.style.strokeDasharray='1';
+    anim(fx.bolt,[{opacity:0},{opacity:1,offset:.15},{opacity:1,offset:.7},{opacity:0}],{duration:700});
+    anim(fx.boltPath,[{strokeDashoffset:1},{strokeDashoffset:0}],{duration:280,easing:'ease-in'});
+    anim(fx.glow,[{opacity:0},{opacity:1,offset:.4},{opacity:0}],{duration:700});
+    await anim(a,[{filter:'blur(0) saturate(1)',opacity:1},{filter:'blur(14px) saturate(2) hue-rotate(-10deg)',opacity:0,transform:'scale(.96)'}],{duration:300,easing:'ease-in'});
+    swap(a,b);
+    await anim(b,[{filter:'blur(14px)',opacity:0,transform:'scale(1.05)'},{filter:'blur(0)',opacity:1,transform:'none'}],{duration:380,easing:'ease-out'});
+  },
+  // halftone rings pulse outward (agency reel)
+  async rings(a,b){
+    anim(fx.ring,[{opacity:0,transform:'scale(.15)'},{opacity:1,transform:'scale(.6)',offset:.4},{opacity:0,transform:'scale(1.2)'}],{duration:800,easing:'cubic-bezier(.2,.7,.3,1)'});
+    anim(fx.dots,[{opacity:0,transform:'scale(.6)'},{opacity:.8,offset:.4},{opacity:0,transform:'scale(1.3)'}],{duration:800});
+    await anim(a,[{opacity:1,transform:'none',filter:'blur(0)'},{opacity:0,transform:'scale(.7)',filter:'blur(10px)'}],{duration:280,easing:'ease-in'});
+    swap(a,b);
+    await anim(b,[{opacity:0,transform:'scale(1.25)',filter:'blur(10px)'},{opacity:1,transform:'none',filter:'blur(0)'}],{duration:420,easing:'cubic-bezier(.15,.8,.25,1)'});
+  },
+  // pixel glitch: content jumps in steps while red squares flicker
+  async pixels(a,b,dir){
+    const W=innerWidth,H=innerHeight;
+    for(let i=0;i<14;i++) pixelBurst(rand(0,W),rand(H*.15,H*.85),2,40);
+    await anim(a,[{transform:'none',opacity:1},{transform:`translateX(${dir*12}px)`,opacity:.8,clipPath:'inset(0 0 40% 0)'},{transform:`translateX(${-dir*20}px)`,opacity:.4,clipPath:'inset(30% 0 0 0)'},{transform:`translateX(${dir*30}px)`,opacity:0}],{duration:260,easing:'steps(4,end)'});
+    swap(a,b);
+    await anim(b,[{transform:`translateX(${-dir*30}px)`,opacity:0,clipPath:'inset(0 0 60% 0)'},{transform:`translateX(${dir*14}px)`,opacity:.7,clipPath:'inset(20% 0 0 0)'},{transform:'none',opacity:1,clipPath:'inset(0 0 0 0)'}],{duration:300,easing:'steps(4,end)'});
+  },
+  // white flash + punch-in (food ad)
+  async flash(a,b){
+    anim(fx.flash,[{opacity:0},{opacity:.95,offset:.35},{opacity:0}],{duration:520});
+    await anim(a,[{transform:'none'},{transform:'scale(1.3)',filter:'blur(8px)',opacity:0}],{duration:180,easing:'ease-in'});
+    swap(a,b);
+    anim(fx.ring,[{opacity:0,transform:'scale(.1)'},{opacity:.9,transform:'scale(.5)',offset:.35},{opacity:0,transform:'scale(1.1)'}],{duration:900,easing:'ease-out'});
+    await anim(b,[{transform:'scale(.82)',filter:'blur(8px)',opacity:0},{transform:'scale(1.04)',filter:'blur(0)',opacity:1,offset:.7},{transform:'none',opacity:1}],{duration:460,easing:'cubic-bezier(.2,.9,.3,1)'});
+  },
+  async fade(a,b){await anim(a,[{opacity:1},{opacity:0}],{duration:120});swap(a,b);await anim(b,[{opacity:0},{opacity:1}],{duration:160})}
+};
+// which transition lands on each step
+const enterFx={1:'bolt',2:'whip',3:'rings',4:'pixels',5:'flash'};
+
+function swap(a,b){
+  a.classList.remove('active'); a.getAnimations().forEach(x=>x.cancel());
+  b.classList.add('active'); scrollTo({top:0});
+}
+
+async function go(to){
+  if(busy||to===cur||to<0||to>5) return; busy=true;
+  const steps=$$('.step'), a=steps[cur], b=steps[to], dir=to>cur?1:-1;
+  const name=RM?'fade':(dir>0?enterFx[to]:'whip');
+  await T[name](a,b,dir);
+  b.getAnimations().forEach(x=>x.cancel());
+  cur=to; ui(); onEnter(b,to); busy=false;
+}
+
+function onEnter(step,i){
+  headline(step);
+  if(i===1) popIn($$('#shapeOpts .opt'));
+  if(i===2) popIn($$('[data-step="2"] .field'));
+  if(i===3){popIn($$('[data-step="3"] .field'),380);punch($('#drawerShow'),1.5)}
+  if(i===4) popIn($$('.ex'));
+  if(i===5) showResult();
+}
+
+function ui(){
+  $$('#prog i').forEach((p,k)=>{p.className=k+1===cur?'on':(k+1<cur?'done':'')});
+  $('#nav').classList.toggle('hide',cur===0||cur===5);
+  $('#ticker').classList.toggle('show',cur>0&&cur<5);
+  $('#nextBtn').textContent=cur===4?'احسب السعر':'التالي';
+}
+
+/* ===================== live updates ===================== */
+function refresh(){
+  const {total}=compute();
+  const el=$('#tickVal'); if(total!==lastTotal){el.textContent=fmt(total); if(cur>0) punch(el,1.35)}
+  lastTotal=total;
+}
+
+$$('#shapeOpts .opt').forEach(o=>o.addEventListener('click',()=>{
+  $$('#shapeOpts .opt').forEach(x=>x.classList.remove('sel')); o.classList.add('sel');
+  shape=Number(o.dataset.v); shapeName=o.dataset.name; burstAt(o,12,80); refresh();
+}));
+
+$$('[data-inc]').forEach(b=>b.addEventListener('click',()=>{
+  const inp=document.getElementById(b.dataset.inc), d=Number(b.dataset.d);
+  const dec=(String(d).split('.')[1]||'').length;
+  inp.value=Math.max(0,+(n(b.dataset.inc)+d).toFixed(Math.max(dec,(String(inp.step).split('.')[1]||'').length)));
+  inp.dispatchEvent(new Event('input')); punch(inp,1.18);
+}));
+$$('.stepper input').forEach(i=>i.addEventListener('input',()=>{
+  if(i.id==='drawers'){$('#drawerShow').textContent=n('drawers');punch($('#drawerShow'),1.3);burstAt($('#drawerShow'),5,60)}
+  refresh();
+}));
+$$('.ex input').forEach(c=>c.addEventListener('change',()=>{
+  const card=c.closest('.ex'); card.classList.toggle('on',c.checked);
+  if(c.checked&&!RM){burstAt(card,10,70);card.animate([{transform:'scale(.9) rotate(4deg)'},{transform:'scale(1.06) rotate(-3deg)'},{}],{duration:380,easing:'cubic-bezier(.2,.9,.3,1.3)'})}
+  refresh();
+}));
+
+/* ===================== result ===================== */
+async function showResult(){
+  const r=compute(); lastTotal=r.total;
+  const chips=$('#chips');
+  chips.innerHTML=[['أساسي',r.base],['أدراج',r.drawer],['إضافات',r.extras]].map(([k,v])=>`<div class="chip"><span>${k}</span>${fmt(v)} د.ل</div>`).join('');
+  if(!RM) anim($('#rings'),[{opacity:0,transform:'scale(.4)'},{opacity:1,transform:'scale(1)'}],{duration:900,easing:'ease-out'});
+  else $('#rings').style.opacity=1;
+  const tot=$('#total');
+  await countUp(tot,0,r.total);
+  punch(tot,1.18); burstAt(tot,16,130);
+  popIn($$('.chip'),0);
+}
+
+/* ===================== WhatsApp ===================== */
 function sendWhatsApp(){
- calculate();
- const text=`السلام عليكم، أريد الاستفسار عن مطبخ ألمنيوم.%0Aالطول: ${n('length')} م%0Aالارتفاع: ${n('height')} م%0Aعدد الأدراج: ${n('drawers')}%0Aالسعر التقديري: ${lastTotal.toLocaleString('ar-LY')} د.ل`;
- const phone=''; 
- if(!phone){alert('ضع رقم واتساب المصنع داخل الكود في متغير phone قبل النشر.');return;}
- location.href='https://wa.me/'+phone+'?text='+text;
+  const r=compute(); lastTotal=r.total;
+  const extras=$$('.ex input:checked').map(c=>c.closest('.ex').childNodes[2].textContent.trim()).join('، ')||'لا يوجد';
+  const text=`السلام عليكم، أريد الاستفسار عن مطبخ ألمنيوم.
+الشكل: ${shapeName}
+الطول: ${n('length')} م
+الارتفاع: ${n('height')} م
+عدد الأدراج: ${n('drawers')}
+الإضافات: ${extras}
+السعر التقديري: ${fmt(lastTotal)} د.ل`;
+  const phone='';
+  if(!phone){alert('ضع رقم واتساب المصنع داخل الكود في متغير phone قبل النشر.');return;}
+  location.href='https://wa.me/'+phone+'?text='+encodeURIComponent(text);
 }
-calculate();
+
+/* ===================== wiring ===================== */
+$('#startBtn').onclick=()=>go(1);
+$('#nextBtn').onclick=()=>go(cur+1);
+$('#backBtn').onclick=()=>go(cur-1);
+$('#editBtn').onclick=()=>go(1);
+$('#waBtn').onclick=sendWhatsApp;
+
+refresh(); ui();
+// intro: headline + flying card stack
+headline($('[data-step="0"]'));
+popIn($$('#stack .pcard'),300);
+if(!RM) anim($('#startBtn'),[{opacity:0,transform:'translateY(20px)'},{opacity:1,transform:'none'}],{duration:400,delay:900,easing:'ease-out'});
 </script>
 </body>
 </html>
